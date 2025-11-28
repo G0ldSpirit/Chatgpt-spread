@@ -2,24 +2,32 @@ import { useEffect, useState } from "react";
 
 export default function Home() {
   const [markets, setMarkets] = useState([]);
-
-  const refresh = () => {
-    fetch("/api/markets")
-      .then((res) => res.json())
-      .then((data) => setMarkets(data.markets || []));
-  };
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    refresh();
-    const interval = setInterval(refresh, 10000);
+    async function load() {
+      try {
+        const res = await fetch("/api/markets");
+        const data = await res.json();
+        setMarkets(data.markets || []);
+      } catch (e) {
+        console.error("Erreur:", e);
+      }
+      setLoading(false);
+    }
+
+    load();
+    const interval = setInterval(load, 15000);
     return () => clearInterval(interval);
   }, []);
 
+  if (loading) return <p>Chargement…</p>;
+
   return (
-    <div style={{ padding: 30 }}>
+    <div style={{ padding: "20px" }}>
       <h1>Top marchés Polymarket par spread</h1>
 
-      <table border="1" cellPadding="8" style={{ borderCollapse: "collapse" }}>
+      <table border="1" cellPadding="6">
         <thead>
           <tr>
             <th>Slug</th>
@@ -30,9 +38,10 @@ export default function Home() {
             <th>Volume</th>
           </tr>
         </thead>
+
         <tbody>
-          {markets.map((m) => (
-            <tr key={m.slug}>
+          {markets.map((m, i) => (
+            <tr key={i}>
               <td>{m.slug}</td>
               <td>{m.question}</td>
               <td>{m.bestBid}</td>
