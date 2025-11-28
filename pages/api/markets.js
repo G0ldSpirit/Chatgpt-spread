@@ -1,10 +1,13 @@
 export default async function handler(req, res) {
   try {
     const response = await fetch("https://clob.polymarket.com/markets", {
-      headers: {
-        "accept": "application/json"
-      }
+      headers: { "accept": "application/json" },
+      cache: "no-store"
     });
+
+    if (!response.ok) {
+      throw new Error("Polymarket API returned " + response.status);
+    }
 
     const data = await response.json();
 
@@ -23,7 +26,7 @@ export default async function handler(req, res) {
     res.status(200).json({ markets });
 
   } catch (err) {
-    console.error("API error:", err);
-    res.status(500).json({ error: "API failed", details: err.message });
+    console.error("API ERROR:", err);
+    res.status(500).json({ error: err.message });
   }
 }
