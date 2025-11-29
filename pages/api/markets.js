@@ -1,34 +1,12 @@
+
 export default async function handler(req, res) {
   try {
-    const response = await fetch(
-      "https://gamma-api.polymarket.com/markets?limit=200&offset=0",
-      {
-        headers: {
-          accept: "application/json",
-        },
-        cache: "no-store",
-      }
-    );
+    const r = await fetch("https://gamma-api.polymarket.com/markets?limit=10&offset=0");
+    const j = await r.json();
 
-    const data = await response.json();
-
-    const marketsRaw = data.markets || [];
-
-    const markets = marketsRaw
-      .filter((m) => m.bestBid != null && m.bestAsk != null)
-      .map((m) => ({
-        slug: m.slug,
-        question: m.question,
-        bestBid: m.bestBid,
-        bestAsk: m.bestAsk,
-        spread: m.bestAsk - m.bestBid,
-        volume: m.volumeNum || 0,
-      }))
-      .sort((a, b) => b.spread - a.spread);
-
-    res.status(200).json({ markets });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
+    console.log("RAW DATA:", j); // log vercel
+    res.status(200).json(j);      // renvoie brut
+  } catch (e) {
+    res.status(500).json({ error: e.toString() });
   }
 }
